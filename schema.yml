@@ -623,6 +623,505 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/automation/commands/:
+    get:
+      operationId: automation_commands_list
+      description: Audit history and queue status of dispatched device control commands.
+      summary: List Device Commands
+      parameters:
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: end_time
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: rule
+        schema:
+          type: integer
+      - in: query
+        name: source
+        schema:
+          type: string
+      - in: query
+        name: start_time
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - ACKNOWLEDGED
+          - EXPIRED
+          - FAILED
+          - QUEUED
+          - SENT
+        description: |-
+          * `QUEUED` - Queued
+          * `SENT` - Sent
+          * `ACKNOWLEDGED` - Acknowledged
+          * `FAILED` - Failed
+          * `EXPIRED` - Expired
+      tags:
+      - automation
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceCommandList'
+          description: ''
+  /api/v1/automation/commands/{id}/:
+    get:
+      operationId: automation_commands_retrieve
+      description: View specific command execution state and hardware acknowledgment.
+      summary: Get Command Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device command.
+        required: true
+      tags:
+      - automation
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCommand'
+          description: ''
+  /api/v1/automation/commands/acknowledge/:
+    post:
+      operationId: automation_commands_acknowledge_create
+      description: Records incoming hardware acknowledgment packet from ESP32 node.
+        Updates physical channel reported state.
+      summary: Acknowledge Device Command Execution
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandAcknowledgeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CommandAcknowledgeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CommandAcknowledgeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Hardware acknowledgment recorded
+        '404':
+          description: Command not found
+  /api/v1/automation/evaluate/:
+    post:
+      operationId: automation_evaluate_create
+      description: Executes rule-based automation engine cycle across all campus rooms
+        and active devices.
+      summary: Evaluate Automation Rules
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutomationEvaluateResponseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AutomationEvaluateResponseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AutomationEvaluateResponseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationEvaluateResponse'
+          description: ''
+  /api/v1/automation/logs/:
+    get:
+      operationId: automation_logs_list
+      description: Audit trail of rule evaluations, skipped triggers, and queued actions.
+      summary: List Automation Logs
+      parameters:
+      - in: query
+        name: action_type
+        schema:
+          type: string
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: end_time
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: execution_result
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: rule
+        schema:
+          type: integer
+      - in: query
+        name: start_time
+        schema:
+          type: string
+          format: date-time
+      tags:
+      - automation
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAutomationLogList'
+          description: ''
+  /api/v1/automation/logs/{id}/:
+    get:
+      operationId: automation_logs_retrieve
+      description: View specific automation execution record.
+      summary: Get Automation Log Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this automation log.
+        required: true
+      tags:
+      - automation
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationLog'
+          description: ''
+  /api/v1/automation/manual-control/:
+    post:
+      operationId: automation_manual_control_create
+      description: Dispatch manual ON/OFF request for a device relay channel. Queues
+        command and awaits hardware ACK.
+      summary: Manual Device Control
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManualControlRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ManualControlRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ManualControlRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '202':
+          description: Command queued for device
+        '400':
+          description: Validation error or safety locked
+  /api/v1/automation/rules/:
+    get:
+      operationId: automation_rules_list
+      description: View all institutional automation rules across campus rooms and
+        devices.
+      summary: List Automation Rules
+      parameters:
+      - in: query
+        name: action_type
+        schema:
+          type: string
+          enum:
+          - DIM_LIGHTS
+          - SEND_ALERT
+          - SWITCH_PROFILE
+          - TURN_OFF_RELAY
+          - TURN_ON_RELAY
+        description: |-
+          * `TURN_OFF_RELAY` - Turn Off Relay
+          * `TURN_ON_RELAY` - Turn On Relay
+          * `DIM_LIGHTS` - Dim Lights
+          * `SEND_ALERT` - Send Alert
+          * `SWITCH_PROFILE` - Switch Power Profile
+      - in: query
+        name: condition_type
+        schema:
+          type: string
+          enum:
+          - DEVICE_OFFLINE
+          - ENERGY_THRESHOLD
+          - HIGH_TEMPERATURE
+          - LUX_THRESHOLD
+          - OCCUPANCY_ACTIVE
+          - OVERCURRENT
+          - SCHEDULED_TIME
+          - VACANCY_TIMEOUT
+        description: |-
+          * `VACANCY_TIMEOUT` - Vacancy Timeout
+          * `OCCUPANCY_ACTIVE` - Occupancy Active
+          * `LUX_THRESHOLD` - Lux Ambient Threshold
+          * `SCHEDULED_TIME` - Scheduled Time
+          * `HIGH_TEMPERATURE` - High Temperature
+          * `OVERCURRENT` - Overcurrent Protection
+          * `ENERGY_THRESHOLD` - Energy Power Threshold
+          * `DEVICE_OFFLINE` - Device Offline
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - in: query
+        name: is_enabled
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - automation
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAutomationRuleList'
+          description: ''
+    post:
+      operationId: automation_rules_create
+      description: Create an automated vacancy or energy threshold rule (Admin only).
+      summary: Create Automation Rule
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutomationRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AutomationRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AutomationRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationRule'
+          description: ''
+  /api/v1/automation/rules/{id}/:
+    get:
+      operationId: automation_rules_retrieve
+      description: Retrieve specific automation rule details and configuration.
+      summary: Get Automation Rule
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this automation rule.
+        required: true
+      tags:
+      - automation
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationRule'
+          description: ''
+    put:
+      operationId: automation_rules_update
+      description: Modify condition, threshold, or target device (Admin only).
+      summary: Update Automation Rule
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this automation rule.
+        required: true
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutomationRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AutomationRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AutomationRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationRule'
+          description: ''
+    patch:
+      operationId: automation_rules_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this automation rule.
+        required: true
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAutomationRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAutomationRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAutomationRuleRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationRule'
+          description: ''
+    delete:
+      operationId: automation_rules_destroy
+      description: Remove an automation rule (Admin only).
+      summary: Delete Automation Rule
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this automation rule.
+        required: true
+      tags:
+      - automation
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/devices/:
     get:
       operationId: devices_list
@@ -3346,6 +3845,20 @@ components:
       - description
       - room
       - title
+    ActionTypeEnum:
+      enum:
+      - TURN_OFF_RELAY
+      - TURN_ON_RELAY
+      - DIM_LIGHTS
+      - SEND_ALERT
+      - SWITCH_PROFILE
+      type: string
+      description: |-
+        * `TURN_OFF_RELAY` - Turn Off Relay
+        * `TURN_ON_RELAY` - Turn On Relay
+        * `DIM_LIGHTS` - Dim Lights
+        * `SEND_ALERT` - Send Alert
+        * `SWITCH_PROFILE` - Switch Power Profile
     AlertActionResponse:
       type: object
       properties:
@@ -3443,6 +3956,194 @@ components:
           type: integer
       required:
       - room_id
+    AutomationEvaluateResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        rules_evaluated:
+          type: integer
+        commands_generated:
+          type: integer
+        logs_created:
+          type: integer
+      required:
+      - commands_generated
+      - logs_created
+      - rules_evaluated
+      - status
+    AutomationEvaluateResponseRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          minLength: 1
+        rules_evaluated:
+          type: integer
+        commands_generated:
+          type: integer
+        logs_created:
+          type: integer
+      required:
+      - commands_generated
+      - logs_created
+      - rules_evaluated
+      - status
+    AutomationLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        rule:
+          type: integer
+          nullable: true
+        rule_name:
+          type: string
+          readOnly: true
+        device:
+          type: integer
+        device_hardware_id:
+          type: string
+          readOnly: true
+        room:
+          type: integer
+          nullable: true
+        room_number:
+          type: string
+          readOnly: true
+        command:
+          type: integer
+          nullable: true
+        command_id:
+          type: string
+          readOnly: true
+        action_taken:
+          type: string
+          maxLength: 128
+        trigger_condition:
+          type: string
+          maxLength: 128
+        execution_result:
+          type: string
+          maxLength: 32
+        details:
+          type: string
+        failure_reason:
+          type: string
+        energy_saved_estimate_kwh:
+          type: number
+          format: double
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - action_taken
+      - command_id
+      - device
+      - device_hardware_id
+      - id
+      - room_number
+      - rule_name
+      - timestamp
+    AutomationRule:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+        room:
+          type: integer
+        room_number:
+          type: string
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        device:
+          type: integer
+        device_hardware_id:
+          type: string
+          readOnly: true
+        channel:
+          type: integer
+          nullable: true
+        channel_index:
+          type: integer
+          readOnly: true
+        channel_label:
+          type: string
+          readOnly: true
+        condition_type:
+          $ref: '#/components/schemas/ConditionTypeEnum'
+        threshold_value:
+          type: number
+          format: double
+        action_type:
+          $ref: '#/components/schemas/ActionTypeEnum'
+        is_enabled:
+          type: boolean
+        last_triggered_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - channel_index
+      - channel_label
+      - created_at
+      - device
+      - device_hardware_id
+      - id
+      - last_triggered_at
+      - name
+      - room
+      - room_number
+      - updated_at
+    AutomationRuleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+        room:
+          type: integer
+        device:
+          type: integer
+        channel:
+          type: integer
+          nullable: true
+        condition_type:
+          $ref: '#/components/schemas/ConditionTypeEnum'
+        threshold_value:
+          type: number
+          format: double
+        action_type:
+          $ref: '#/components/schemas/ActionTypeEnum'
+        is_enabled:
+          type: boolean
+      required:
+      - device
+      - name
+      - room
     Building:
       type: object
       properties:
@@ -3597,6 +4298,40 @@ components:
       - confirm_new_password
       - new_password
       - old_password
+    CommandAcknowledgeRequest:
+      type: object
+      properties:
+        command_id:
+          type: string
+          minLength: 1
+        reported_state:
+          type: boolean
+        hardware_notes:
+          type: string
+          default: ''
+      required:
+      - command_id
+      - reported_state
+    ConditionTypeEnum:
+      enum:
+      - VACANCY_TIMEOUT
+      - OCCUPANCY_ACTIVE
+      - LUX_THRESHOLD
+      - SCHEDULED_TIME
+      - HIGH_TEMPERATURE
+      - OVERCURRENT
+      - ENERGY_THRESHOLD
+      - DEVICE_OFFLINE
+      type: string
+      description: |-
+        * `VACANCY_TIMEOUT` - Vacancy Timeout
+        * `OCCUPANCY_ACTIVE` - Occupancy Active
+        * `LUX_THRESHOLD` - Lux Ambient Threshold
+        * `SCHEDULED_TIME` - Scheduled Time
+        * `HIGH_TEMPERATURE` - High Temperature
+        * `OVERCURRENT` - Overcurrent Protection
+        * `ENERGY_THRESHOLD` - Energy Power Threshold
+        * `DEVICE_OFFLINE` - Device Offline
     CurrentUserProfile:
       type: object
       properties:
@@ -3696,6 +4431,74 @@ components:
       - id
       - room
       - room_number
+    DeviceCommand:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        command_id:
+          type: string
+          readOnly: true
+        device:
+          type: integer
+        device_hardware_id:
+          type: string
+          readOnly: true
+        channel:
+          type: integer
+        channel_index:
+          type: integer
+          readOnly: true
+        channel_label:
+          type: string
+          readOnly: true
+        source:
+          $ref: '#/components/schemas/SourceEnum'
+        rule:
+          type: integer
+          nullable: true
+        rule_name:
+          type: string
+          readOnly: true
+        issued_by:
+          type: integer
+          nullable: true
+        issued_by_username:
+          type: string
+          readOnly: true
+        target_state:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/DeviceCommandStatusEnum'
+        payload: {}
+        failure_reason:
+          type: string
+        hardware_ack_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - channel
+      - channel_index
+      - channel_label
+      - command_id
+      - created_at
+      - device
+      - device_hardware_id
+      - id
+      - issued_by_username
+      - rule_name
+      - target_state
+      - updated_at
     DeviceCommandRequest:
       type: object
       properties:
@@ -3710,6 +4513,20 @@ components:
       required:
       - channel_index
       - target_state
+    DeviceCommandStatusEnum:
+      enum:
+      - QUEUED
+      - SENT
+      - ACKNOWLEDGED
+      - FAILED
+      - EXPIRED
+      type: string
+      description: |-
+        * `QUEUED` - Queued
+        * `SENT` - Sent
+        * `ACKNOWLEDGED` - Acknowledged
+        * `FAILED` - Failed
+        * `EXPIRED` - Expired
     DeviceCreate:
       type: object
       properties:
@@ -3802,7 +4619,7 @@ components:
         device_type:
           $ref: '#/components/schemas/DeviceTypeEnum'
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/Status384Enum'
         calculated_status:
           type: string
           readOnly: true
@@ -3918,7 +4735,7 @@ components:
         device_type:
           $ref: '#/components/schemas/DeviceTypeEnum'
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/Status384Enum'
         calculated_status:
           type: string
           readOnly: true
@@ -4001,7 +4818,7 @@ components:
         device_type:
           $ref: '#/components/schemas/DeviceTypeEnum'
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/Status384Enum'
         mac_address:
           type: string
           maxLength: 32
@@ -4225,6 +5042,23 @@ components:
           minLength: 1
       required:
       - refresh
+    ManualControlRequest:
+      type: object
+      properties:
+        device_id:
+          type: integer
+        channel_index:
+          type: integer
+          minimum: 1
+        target_state:
+          type: boolean
+        reason:
+          type: string
+          default: ''
+      required:
+      - channel_index
+      - device_id
+      - target_state
     OccupancyStateEnum:
       enum:
       - EMPTY
@@ -4258,6 +5092,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AIAlertList'
+    PaginatedAutomationLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutomationLog'
+    PaginatedAutomationRuleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutomationRule'
     PaginatedBuildingList:
       type: object
       required:
@@ -4304,6 +5184,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DailyEnergyAggregation'
+    PaginatedDeviceCommandList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceCommand'
     PaginatedDeviceHeartbeatList:
       type: object
       required:
@@ -4537,6 +5440,31 @@ components:
       properties:
         room_id:
           type: integer
+    PatchedAutomationRuleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        description:
+          type: string
+        room:
+          type: integer
+        device:
+          type: integer
+        channel:
+          type: integer
+          nullable: true
+        condition_type:
+          $ref: '#/components/schemas/ConditionTypeEnum'
+        threshold_value:
+          type: number
+          format: double
+        action_type:
+          $ref: '#/components/schemas/ActionTypeEnum'
+        is_enabled:
+          type: boolean
     PatchedBuildingRequest:
       type: object
       properties:
@@ -4587,7 +5515,7 @@ components:
         device_type:
           $ref: '#/components/schemas/DeviceTypeEnum'
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/Status384Enum'
         mac_address:
           type: string
           maxLength: 32
@@ -5088,6 +6016,14 @@ components:
         * `LOW` - Low
         * `WARNING` - Warning
         * `INFO` - Informational
+    SourceEnum:
+      enum:
+      - MANUAL
+      - AUTOMATION
+      type: string
+      description: |-
+        * `MANUAL` - Manual User Control
+        * `AUTOMATION` - Automation Engine
     StaffProfile:
       type: object
       properties:
@@ -5142,7 +6078,7 @@ components:
           type: boolean
         alert_push_enabled:
           type: boolean
-    StatusEnum:
+    Status384Enum:
       enum:
       - ONLINE
       - OFFLINE

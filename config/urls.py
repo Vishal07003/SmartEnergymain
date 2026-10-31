@@ -41,6 +41,7 @@ api_v1_patterns = [
     path('energy/', include('apps.energy.urls', namespace='energy')),
     path('alerts/', include('apps.alerts.urls', namespace='alerts')),
     path('analytics/', include('apps.analytics.urls', namespace='analytics')),
+    path('automation/', include('apps.automation.urls', namespace='automation')),
 ]
 
 urlpatterns = [
