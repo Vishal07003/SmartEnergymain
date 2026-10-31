@@ -1,0 +1,435 @@
+openapi: 3.0.3
+info:
+  title: Smart Energy Manager API
+  version: 1.0.0
+  description: Institutional Multi-Floor Campus Energy Management and ESP32 IoT Backend
+paths:
+  /api/v1/accounts/profile/:
+    get:
+      operationId: accounts_profile_retrieve
+      description: Returns detailed profile, department, block, and preference settings
+        for the authenticated user.
+      summary: Get Current User Profile
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserProfile'
+          description: ''
+    patch:
+      operationId: accounts_profile_partial_update
+      description: Allows the authenticated staff member to update email, name, phone,
+        or notification preferences.
+      summary: Update Current User Profile
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUserProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUserProfileRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserProfile'
+          description: ''
+  /api/v1/auth/change-password/:
+    post:
+      operationId: auth_change_password_create
+      description: Securely changes the user's password following Django's password
+        validation rules.
+      summary: Change Password
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Password changed successfully
+        '400':
+          description: Validation error or incorrect old password
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Authenticates staff or administrator, returning JWT access & refresh
+        tokens along with institutional role details.
+      summary: User Login
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+        '401':
+          description: Invalid credentials
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Blacklists the provided JWT refresh token, preventing further token
+        renewals.
+      summary: User Logout
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+        '400':
+          description: Invalid or expired token
+  /api/v1/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      description: Returns detailed profile, department, block, and preference settings
+        for the authenticated user.
+      summary: Get Current User Profile
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserProfile'
+          description: ''
+    patch:
+      operationId: auth_me_partial_update
+      description: Allows the authenticated staff member to update email, name, phone,
+        or notification preferences.
+      summary: Update Current User Profile
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUserProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUserProfileRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserProfile'
+          description: ''
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/token/verify/:
+    post:
+      operationId: auth_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    ChangePasswordRequest:
+      type: object
+      properties:
+        old_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        confirm_new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - confirm_new_password
+      - new_password
+      - old_password
+    CurrentUserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        is_staff:
+          type: boolean
+          readOnly: true
+          title: Staff status
+          description: Designates whether the user can log into this admin site.
+        is_superuser:
+          type: boolean
+          readOnly: true
+          title: Superuser status
+          description: Designates that this user has all permissions without explicitly
+            assigning them.
+        profile:
+          $ref: '#/components/schemas/StaffProfile'
+      required:
+      - id
+      - is_staff
+      - is_superuser
+      - username
+    CustomTokenObtainPairRequest:
+      type: object
+      description: Custom JWT serializer returning user credentials, profile information,
+        and roles.
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    PatchedCurrentUserProfileRequest:
+      type: object
+      properties:
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        profile:
+          $ref: '#/components/schemas/StaffProfileRequest'
+    RoleEnum:
+      enum:
+      - ADMIN
+      - STAFF
+      type: string
+      description: |-
+        * `ADMIN` - Administrator
+        * `STAFF` - Staff
+    StaffProfile:
+      type: object
+      properties:
+        employee_id:
+          type: string
+          readOnly: true
+        department:
+          type: string
+          maxLength: 128
+        phone_number:
+          type: string
+          maxLength: 32
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        assigned_block:
+          type: string
+          maxLength: 128
+        notifications_enabled:
+          type: boolean
+        alert_push_enabled:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - employee_id
+      - role
+      - updated_at
+    StaffProfileRequest:
+      type: object
+      properties:
+        department:
+          type: string
+          minLength: 1
+          maxLength: 128
+        phone_number:
+          type: string
+          maxLength: 32
+        assigned_block:
+          type: string
+          minLength: 1
+          maxLength: 128
+        notifications_enabled:
+          type: boolean
+        alert_push_enabled:
+          type: boolean
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TokenVerifyRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - token
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
