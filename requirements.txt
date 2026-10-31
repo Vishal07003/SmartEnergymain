@@ -1,0 +1,26 @@
+# Core Django & REST Framework
+Django>=5.1,<5.3
+djangorestframework>=3.15.2
+djangorestframework-simplejwt>=5.3.1
+django-cors-headers>=4.4.0
+django-filter>=24.3
+
+# PostgreSQL Database Engine
+psycopg[binary]>=3.2.1
+
+# Environment Configuration
+python-decouple>=3.8
+
+# Real-time WebSocket Channels
+channels>=4.2.0
+channels-redis>=4.2.1
+daphne>=4.1.2
+
+# Testing Framework
+pytest>=8.3.2
+pytest-django>=4.9.0
+
+# Optional Async & Utility support
+asgiref>=3.8.1
+requests>=2.32.3
+
