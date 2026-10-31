@@ -35,3 +35,4 @@ class AlertFilter(django_filters.FilterSet):
             'start_time',
             'end_time',
         ]
+

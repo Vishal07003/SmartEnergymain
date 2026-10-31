@@ -162,3 +162,4 @@ class AnomalyDetectionService:
                 return alert
 
         return None
+
