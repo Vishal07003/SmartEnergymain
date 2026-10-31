@@ -50,6 +50,342 @@ paths:
               schema:
                 $ref: '#/components/schemas/CurrentUserProfile'
           description: ''
+  /api/v1/alerts/:
+    get:
+      operationId: alerts_list
+      description: Search, filter, and paginate through campus energy anomalies and
+        system alerts.
+      summary: List Alerts
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - DEVICE_OFFLINE
+          - ENERGY_WASTE
+          - HIGH_TEMPERATURE
+          - OCCUPANCY_ANOMALY
+          - SAFETY_TRIGGER
+          - THRESHOLD_EXCEEDED
+        description: |-
+          * `ENERGY_WASTE` - Energy Waste
+          * `OCCUPANCY_ANOMALY` - Occupancy Anomaly
+          * `DEVICE_OFFLINE` - Device Offline
+          * `HIGH_TEMPERATURE` - High Temperature
+          * `SAFETY_TRIGGER` - Safety Trigger
+          * `THRESHOLD_EXCEEDED` - Threshold Exceeded
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: end_time
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: floor
+        schema:
+          type: integer
+      - in: query
+        name: floor_level
+        schema:
+          type: integer
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - in: query
+        name: is_acknowledged
+        schema:
+          type: boolean
+      - in: query
+        name: is_resolved
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: severity
+        schema:
+          type: string
+          enum:
+          - CRITICAL
+          - HIGH
+          - INFO
+          - LOW
+          - MEDIUM
+          - WARNING
+        description: |-
+          * `CRITICAL` - Critical
+          * `HIGH` - High
+          * `MEDIUM` - Medium
+          * `LOW` - Low
+          * `WARNING` - Warning
+          * `INFO` - Informational
+      - in: query
+        name: start_time
+        schema:
+          type: string
+          format: date-time
+      tags:
+      - alerts
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAIAlertListList'
+          description: ''
+  /api/v1/alerts/{id}/:
+    get:
+      operationId: alerts_retrieve
+      description: Retrieve detailed alert diagnoses, possible causes, and recommended
+        actions.
+      summary: Get Alert Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ai alert.
+        required: true
+      tags:
+      - alerts
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIAlertDetail'
+          description: ''
+  /api/v1/alerts/{id}/acknowledge/:
+    post:
+      operationId: alerts_acknowledge_create
+      description: Mark an alert as acknowledged by the current staff member/administrator.
+      summary: Acknowledge Alert
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ai alert.
+        required: true
+      tags:
+      - alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIAlertListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AIAlertListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIAlertListRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertActionResponse'
+          description: ''
+    patch:
+      operationId: alerts_acknowledge_partial_update
+      description: Mark an alert as acknowledged by the current staff member/administrator.
+      summary: Acknowledge Alert
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ai alert.
+        required: true
+      tags:
+      - alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAIAlertListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAIAlertListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAIAlertListRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertActionResponse'
+          description: ''
+  /api/v1/alerts/{id}/resolve/:
+    post:
+      operationId: alerts_resolve_create
+      description: Mark an anomaly or system alert as resolved and closed.
+      summary: Resolve Alert
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ai alert.
+        required: true
+      tags:
+      - alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIAlertListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AIAlertListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIAlertListRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertActionResponse'
+          description: ''
+    patch:
+      operationId: alerts_resolve_partial_update
+      description: Mark an anomaly or system alert as resolved and closed.
+      summary: Resolve Alert
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ai alert.
+        required: true
+      tags:
+      - alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAIAlertListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAIAlertListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAIAlertListRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertActionResponse'
+          description: ''
+  /api/v1/alerts/scan/:
+    post:
+      operationId: alerts_scan_create
+      description: Executes rule-based energy and device anomaly detection, evaluating
+        vacant room wastage and device heartbeats.
+      summary: Trigger Anomaly Scan
+      tags:
+      - alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnomalyScanResponseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AnomalyScanResponseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AnomalyScanResponseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnomalyScanResponse'
+          description: ''
+  /api/v1/alerts/summary/:
+    get:
+      operationId: alerts_summary_retrieve
+      description: Returns counts of active, unresolved alerts segmented by CRITICAL,
+        HIGH, MEDIUM, and LOW severity.
+      summary: Alerts Summary
+      tags:
+      - alerts
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertSummary'
+          description: ''
   /api/v1/analytics/buildings/:
     get:
       operationId: analytics_buildings_retrieve
@@ -2806,6 +3142,300 @@ paths:
           description: ''
 components:
   schemas:
+    AIAlertDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        room:
+          type: integer
+        room_number:
+          type: string
+          readOnly: true
+        room_name:
+          type: string
+          readOnly: true
+        floor_level:
+          type: integer
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        building_name:
+          type: string
+          readOnly: true
+        device:
+          type: integer
+          nullable: true
+        device_name:
+          type: string
+          readOnly: true
+        device_hardware_id:
+          type: string
+          readOnly: true
+        description:
+          type: string
+        possible_reason:
+          type: string
+        recommended_action:
+          type: string
+        power_wastage_estimate_watts:
+          type: number
+          format: double
+        detection_method:
+          type: string
+          maxLength: 32
+        is_acknowledged:
+          type: boolean
+        acknowledged_by:
+          type: string
+          maxLength: 128
+        acknowledged_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_resolved:
+          type: boolean
+        resolved_by:
+          type: string
+          maxLength: 128
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - building_name
+      - description
+      - device_hardware_id
+      - device_name
+      - floor_level
+      - id
+      - room
+      - room_name
+      - room_number
+      - timestamp
+      - title
+    AIAlertList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        room:
+          type: integer
+        room_number:
+          type: string
+          readOnly: true
+        room_name:
+          type: string
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        device:
+          type: integer
+          nullable: true
+        device_hardware_id:
+          type: string
+          readOnly: true
+        description:
+          type: string
+        power_wastage_estimate_watts:
+          type: number
+          format: double
+        detection_method:
+          type: string
+          maxLength: 32
+        is_acknowledged:
+          type: boolean
+        acknowledged_by:
+          type: string
+          maxLength: 128
+        acknowledged_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_resolved:
+          type: boolean
+        resolved_by:
+          type: string
+          maxLength: 128
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - description
+      - device_hardware_id
+      - id
+      - room
+      - room_name
+      - room_number
+      - timestamp
+      - title
+    AIAlertListRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        room:
+          type: integer
+        device:
+          type: integer
+          nullable: true
+        description:
+          type: string
+          minLength: 1
+        power_wastage_estimate_watts:
+          type: number
+          format: double
+        detection_method:
+          type: string
+          minLength: 1
+          maxLength: 32
+        is_acknowledged:
+          type: boolean
+        acknowledged_by:
+          type: string
+          maxLength: 128
+        acknowledged_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_resolved:
+          type: boolean
+        resolved_by:
+          type: string
+          maxLength: 128
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - description
+      - room
+      - title
+    AlertActionResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        alert_id:
+          type: integer
+        action:
+          type: string
+        actor:
+          type: string
+        timestamp:
+          type: string
+      required:
+      - action
+      - actor
+      - alert_id
+      - status
+      - timestamp
+    AlertSummary:
+      type: object
+      properties:
+        total_unresolved:
+          type: integer
+        critical_count:
+          type: integer
+        high_count:
+          type: integer
+        medium_count:
+          type: integer
+        low_count:
+          type: integer
+        total_power_wastage_watts:
+          type: number
+          format: double
+        category_breakdown:
+          type: object
+          additionalProperties: {}
+      required:
+      - category_breakdown
+      - critical_count
+      - high_count
+      - low_count
+      - medium_count
+      - total_power_wastage_watts
+      - total_unresolved
+    AnomalyScanResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        rooms_scanned:
+          type: integer
+        new_alerts_created:
+          type: integer
+        alert_ids:
+          type: array
+          items:
+            type: integer
+        method:
+          type: string
+      required:
+      - alert_ids
+      - method
+      - new_alerts_created
+      - rooms_scanned
+      - status
+    AnomalyScanResponseRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          minLength: 1
+        rooms_scanned:
+          type: integer
+        new_alerts_created:
+          type: integer
+        alert_ids:
+          type: array
+          items:
+            type: integer
+        method:
+          type: string
+          minLength: 1
+      required:
+      - alert_ids
+      - method
+      - new_alerts_created
+      - rooms_scanned
+      - status
     AssignRoomRequest:
       type: object
       properties:
@@ -2932,6 +3562,22 @@ components:
       - start_date
       - total_consumption_kwh
       - waste_estimate_notice
+    CategoryEnum:
+      enum:
+      - ENERGY_WASTE
+      - OCCUPANCY_ANOMALY
+      - DEVICE_OFFLINE
+      - HIGH_TEMPERATURE
+      - SAFETY_TRIGGER
+      - THRESHOLD_EXCEEDED
+      type: string
+      description: |-
+        * `ENERGY_WASTE` - Energy Waste
+        * `OCCUPANCY_ANOMALY` - Occupancy Anomaly
+        * `DEVICE_OFFLINE` - Device Offline
+        * `HIGH_TEMPERATURE` - High Temperature
+        * `SAFETY_TRIGGER` - Safety Trigger
+        * `THRESHOLD_EXCEEDED` - Threshold Exceeded
     ChangePasswordRequest:
       type: object
       properties:
@@ -3589,6 +4235,29 @@ components:
         * `EMPTY` - Empty
         * `ACTIVE` - Active
         * `IDLE_TRANSITION` - Idle Transition
+    PaginatedAIAlertListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIAlertList'
     PaginatedBuildingList:
       type: object
       required:
@@ -3819,6 +4488,50 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TelemetryReading'
+    PatchedAIAlertListRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        room:
+          type: integer
+        device:
+          type: integer
+          nullable: true
+        description:
+          type: string
+          minLength: 1
+        power_wastage_estimate_watts:
+          type: number
+          format: double
+        detection_method:
+          type: string
+          minLength: 1
+          maxLength: 32
+        is_acknowledged:
+          type: boolean
+        acknowledged_by:
+          type: string
+          maxLength: 128
+        acknowledged_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_resolved:
+          type: boolean
+        resolved_by:
+          type: string
+          maxLength: 128
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
     PatchedAssignRoomRequest:
       type: object
       properties:
@@ -4359,6 +5072,22 @@ components:
         * `AMBIENT_LIGHT` - Ambient Light (Lux) Sensor
         * `SOUND_ACOUSTIC` - Sound / Acoustic Sensor
         * `CURRENT_POWER` - Current / Power CT Clamp
+    SeverityEnum:
+      enum:
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+      - LOW
+      - WARNING
+      - INFO
+      type: string
+      description: |-
+        * `CRITICAL` - Critical
+        * `HIGH` - High
+        * `MEDIUM` - Medium
+        * `LOW` - Low
+        * `WARNING` - Warning
+        * `INFO` - Informational
     StaffProfile:
       type: object
       properties:
