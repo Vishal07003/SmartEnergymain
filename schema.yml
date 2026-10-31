@@ -227,8 +227,2302 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/devices/:
+    get:
+      operationId: devices_list
+      description: Filter, search, and paginate through institutional ESP32 nodes
+        and smart controllers.
+      summary: List Campus Devices
+      parameters:
+      - in: query
+        name: automation_enabled
+        schema:
+          type: boolean
+      - in: query
+        name: building
+        schema:
+          type: integer
+        description: Filter by building ID
+      - in: query
+        name: building_code
+        schema:
+          type: string
+        description: Filter by building code (e.g. BLD-ST)
+      - in: query
+        name: device_type
+        schema:
+          type: string
+        description: 'Filter by device type: ESP32_NODE, RELAY_MODULE, etc.'
+      - in: query
+        name: floor
+        schema:
+          type: integer
+        description: Filter by floor ID
+      - in: query
+        name: floor_level
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+        description: Filter by room ID
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: 'Filter by configured status: ONLINE, OFFLINE, DEGRADED'
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceListList'
+          description: ''
+    post:
+      operationId: devices_create
+      description: Register a new ESP32 device with hardware ID validation and optional
+        channel initialization (Admin only).
+      summary: Register Device
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCreate'
+          description: ''
+  /api/v1/devices/{id}/:
+    get:
+      operationId: devices_retrieve
+      description: Retrieve full device telemetry metadata, relay channels, and calculated
+        live heartbeat status.
+      summary: Get Device Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceDetail'
+          description: ''
+    put:
+      operationId: devices_update
+      description: Update device settings, firmware version, and Wi-Fi configurations
+        (Admin only).
+      summary: Update Device
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceListRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceList'
+          description: ''
+    patch:
+      operationId: devices_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceListRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceList'
+          description: ''
+    delete:
+      operationId: devices_destroy
+      description: Remove a device from campus inventory (Admin only).
+      summary: Deregister Device
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/devices/{id}/assign-room/:
+    post:
+      operationId: devices_assign_room_create
+      description: Change or set the room assignment for this device with strict validation
+        (Admin only).
+      summary: Assign Device to Room
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRoomRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssignRoomRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssignRoomRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Room assigned successfully
+        '400':
+          description: Invalid room ID or inactive room
+    patch:
+      operationId: devices_assign_room_partial_update
+      description: Change or set the room assignment for this device with strict validation
+        (Admin only).
+      summary: Assign Device to Room
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAssignRoomRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAssignRoomRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAssignRoomRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Room assigned successfully
+        '400':
+          description: Invalid room ID or inactive room
+  /api/v1/devices/{id}/channels/:
+    get:
+      operationId: devices_channels_list
+      description: Returns all controllable and fixed relay channels configured for
+        this device.
+      summary: List Relay Channels
+      parameters:
+      - in: query
+        name: automation_enabled
+        schema:
+          type: boolean
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: device_type
+        schema:
+          type: string
+          enum:
+          - CURRENT_SENSOR
+          - ESP32_NODE
+          - HVAC_FAN_CONTROLLER
+          - LIGHTING_BANK
+          - RELAY_MODULE
+          - SMART_POWER_SOCKET
+        description: |-
+          * `ESP32_NODE` - ESP32 Node
+          * `RELAY_MODULE` - Relay Module
+          * `SMART_POWER_SOCKET` - Smart Power Socket
+          * `CURRENT_SENSOR` - Current Sensor
+          * `LIGHTING_BANK` - Lighting Bank
+          * `HVAC_FAN_CONTROLLER` - HVAC / Fan Controller
+      - in: query
+        name: floor
+        schema:
+          type: integer
+      - in: query
+        name: floor_level
+        schema:
+          type: integer
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - DEGRADED
+          - OFFLINE
+          - ONLINE
+        description: |-
+          * `ONLINE` - Online
+          * `OFFLINE` - Offline
+          * `DEGRADED` - Degraded
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRelayChannelList'
+          description: ''
+  /api/v1/devices/{id}/commands/:
+    post:
+      operationId: devices_commands_create
+      description: Validate and queue a relay ON/OFF command. Does NOT return premature
+        execution success without real hardware acknowledgment.
+      summary: Issue Relay Command
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCommandRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceCommandRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceCommandRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '202':
+          description: Command accepted and queued; awaiting ESP32 hardware execution
+        '400':
+          description: Invalid channel or safety locked
+  /api/v1/devices/{id}/heartbeat/:
+    get:
+      operationId: devices_heartbeat_retrieve
+      description: Returns the most recent heartbeat record and connectivity metrics
+        received from the ESP32 node.
+      summary: Get Device Heartbeat
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceHeartbeat'
+          description: ''
+        '404':
+          description: No heartbeat records received yet for this device
+  /api/v1/devices/{id}/history/:
+    get:
+      operationId: devices_history_list
+      description: Returns historical heartbeat transmissions (up to the last 50 entries)
+        for diagnostics.
+      summary: Get Device Heartbeat History
+      parameters:
+      - in: query
+        name: automation_enabled
+        schema:
+          type: boolean
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: device_type
+        schema:
+          type: string
+          enum:
+          - CURRENT_SENSOR
+          - ESP32_NODE
+          - HVAC_FAN_CONTROLLER
+          - LIGHTING_BANK
+          - RELAY_MODULE
+          - SMART_POWER_SOCKET
+        description: |-
+          * `ESP32_NODE` - ESP32 Node
+          * `RELAY_MODULE` - Relay Module
+          * `SMART_POWER_SOCKET` - Smart Power Socket
+          * `CURRENT_SENSOR` - Current Sensor
+          * `LIGHTING_BANK` - Lighting Bank
+          * `HVAC_FAN_CONTROLLER` - HVAC / Fan Controller
+      - in: query
+        name: floor
+        schema:
+          type: integer
+      - in: query
+        name: floor_level
+        schema:
+          type: integer
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - DEGRADED
+          - OFFLINE
+          - ONLINE
+        description: |-
+          * `ONLINE` - Online
+          * `OFFLINE` - Offline
+          * `DEGRADED` - Degraded
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceHeartbeatList'
+          description: ''
+  /api/v1/rooms/:
+    get:
+      operationId: rooms_list
+      description: Search, filter, and paginate through campus rooms with occupancy
+        states and device counts.
+      summary: List Rooms
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+        description: Filter by Building ID
+      - in: query
+        name: building_code
+        schema:
+          type: string
+        description: Filter by Building code (e.g. BLD-B)
+      - in: query
+        name: floor
+        schema:
+          type: integer
+      - in: query
+        name: floor_level
+        schema:
+          type: integer
+        description: Filter by Floor level (1, 2, 3...)
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: occupancy_state
+        schema:
+          type: string
+        description: 'Filter by Occupancy: EMPTY, ACTIVE, IDLE_TRANSITION'
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room_type
+        schema:
+          type: string
+        description: 'Filter by Room Type: Classroom, Computer Lab, Seminar Hall,
+          Research Lab'
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRoomListList'
+          description: ''
+    post:
+      operationId: rooms_create
+      description: Add a new room to a floor (Admin only).
+      summary: Create Room
+      tags:
+      - rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoomListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoomListRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomList'
+          description: ''
+  /api/v1/rooms/{id}/:
+    get:
+      operationId: rooms_retrieve
+      description: Retrieve complete room details including assigned ESP32 devices
+        and sensors.
+      summary: Get Room Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this room.
+        required: true
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomDetail'
+          description: ''
+    put:
+      operationId: rooms_update
+      description: Update room metadata or configuration (Admin only).
+      summary: Update Room
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this room.
+        required: true
+      tags:
+      - rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoomListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoomListRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomList'
+          description: ''
+    patch:
+      operationId: rooms_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this room.
+        required: true
+      tags:
+      - rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRoomListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRoomListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRoomListRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomList'
+          description: ''
+    delete:
+      operationId: rooms_destroy
+      description: Remove a room from the system (Admin only).
+      summary: Delete Room
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this room.
+        required: true
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/rooms/buildings/:
+    get:
+      operationId: rooms_buildings_list
+      description: Get all campus buildings with total floors and room counts.
+      summary: List Buildings
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBuildingList'
+          description: ''
+    post:
+      operationId: rooms_buildings_create
+      description: Register a new building (Admin only).
+      summary: Create Building
+      tags:
+      - rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BuildingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BuildingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Building'
+          description: ''
+  /api/v1/rooms/buildings/{id}/:
+    get:
+      operationId: rooms_buildings_retrieve
+      description: Retrieve details of a single campus building.
+      summary: Get Building Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this building.
+        required: true
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Building'
+          description: ''
+    put:
+      operationId: rooms_buildings_update
+      description: Update building details (Admin only).
+      summary: Update Building
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this building.
+        required: true
+      tags:
+      - rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BuildingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BuildingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Building'
+          description: ''
+    patch:
+      operationId: rooms_buildings_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this building.
+        required: true
+      tags:
+      - rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBuildingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBuildingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBuildingRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Building'
+          description: ''
+    delete:
+      operationId: rooms_buildings_destroy
+      description: Remove a building (Admin only).
+      summary: Delete Building
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this building.
+        required: true
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/rooms/buildings/{id}/floors/:
+    get:
+      operationId: rooms_buildings_floors_list
+      description: Returns all floors belonging to the specified building.
+      summary: List Building Floors
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this building.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFloorList'
+          description: ''
+  /api/v1/rooms/floors/:
+    get:
+      operationId: rooms_floors_list
+      description: Get all campus floors with building relationships.
+      summary: List Floors
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: level
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFloorList'
+          description: ''
+    post:
+      operationId: rooms_floors_create
+      description: Create a new floor within a building (Admin only).
+      summary: Create Floor
+      tags:
+      - rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FloorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FloorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FloorRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Floor'
+          description: ''
+  /api/v1/rooms/floors/{id}/:
+    get:
+      operationId: rooms_floors_retrieve
+      description: Retrieve details of a single floor.
+      summary: Get Floor Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this floor.
+        required: true
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Floor'
+          description: ''
+    put:
+      operationId: rooms_floors_update
+      description: Update floor details (Admin only).
+      summary: Update Floor
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this floor.
+        required: true
+      tags:
+      - rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FloorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FloorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FloorRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Floor'
+          description: ''
+    patch:
+      operationId: rooms_floors_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this floor.
+        required: true
+      tags:
+      - rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFloorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFloorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFloorRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Floor'
+          description: ''
+    delete:
+      operationId: rooms_floors_destroy
+      description: Remove a floor (Admin only).
+      summary: Delete Floor
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this floor.
+        required: true
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/rooms/floors/{id}/rooms/:
+    get:
+      operationId: rooms_floors_rooms_list
+      description: Returns all rooms located on the specified floor.
+      summary: List Floor Rooms
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this floor.
+        required: true
+      - in: query
+        name: level
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRoomListList'
+          description: ''
+  /api/v1/sensors/:
+    get:
+      operationId: sensors_list
+      description: Filter and search all campus sensors (PIR, Temp, Lux, etc.).
+      summary: List Sensors
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: sensor_type
+        schema:
+          type: string
+          enum:
+          - AMBIENT_LIGHT
+          - CURRENT_POWER
+          - HUMIDITY
+          - PIR_MOTION
+          - SOUND_ACOUSTIC
+          - TEMPERATURE
+        description: |-
+          * `PIR_MOTION` - PIR Motion Sensor
+          * `TEMPERATURE` - Temperature Sensor
+          * `HUMIDITY` - Humidity Sensor
+          * `AMBIENT_LIGHT` - Ambient Light (Lux) Sensor
+          * `SOUND_ACOUSTIC` - Sound / Acoustic Sensor
+          * `CURRENT_POWER` - Current / Power CT Clamp
+      tags:
+      - sensors
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSensorListList'
+          description: ''
+    post:
+      operationId: sensors_create
+      description: Register a new sensor and map it to a room & device (Admin only).
+      summary: Register Sensor
+      tags:
+      - sensors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorCreateUpdate'
+          description: ''
+  /api/v1/sensors/{id}/:
+    get:
+      operationId: sensors_retrieve
+      description: Retrieve sensor configuration, room assignment, and latest telemetry.
+      summary: Get Sensor Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - sensors
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorDetail'
+          description: ''
+    put:
+      operationId: sensors_update
+      description: Update sensor metadata, active state, or model (Admin only).
+      summary: Update Sensor
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - sensors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorCreateUpdate'
+          description: ''
+    patch:
+      operationId: sensors_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - sensors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSensorCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSensorCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSensorCreateUpdateRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorCreateUpdate'
+          description: ''
+    delete:
+      operationId: sensors_destroy
+      description: Remove a sensor (Admin only).
+      summary: Deregister Sensor
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - sensors
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/sensors/{id}/history/:
+    get:
+      operationId: sensors_history_list
+      description: Paginated or time-bounded telemetry history for this sensor.
+      summary: Get Sensor Readings History
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: end_time
+        schema:
+          type: string
+        description: ISO 8601 end timestamp filter
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: sensor_type
+        schema:
+          type: string
+          enum:
+          - AMBIENT_LIGHT
+          - CURRENT_POWER
+          - HUMIDITY
+          - PIR_MOTION
+          - SOUND_ACOUSTIC
+          - TEMPERATURE
+        description: |-
+          * `PIR_MOTION` - PIR Motion Sensor
+          * `TEMPERATURE` - Temperature Sensor
+          * `HUMIDITY` - Humidity Sensor
+          * `AMBIENT_LIGHT` - Ambient Light (Lux) Sensor
+          * `SOUND_ACOUSTIC` - Sound / Acoustic Sensor
+          * `CURRENT_POWER` - Current / Power CT Clamp
+      - in: query
+        name: start_time
+        schema:
+          type: string
+        description: ISO 8601 start timestamp filter
+      tags:
+      - sensors
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTelemetryReadingList'
+          description: ''
+  /api/v1/sensors/{id}/latest/:
+    get:
+      operationId: sensors_latest_retrieve
+      description: Returns the most recent measured value for this specific sensor.
+      summary: Get Latest Sensor Reading
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - sensors
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryReading'
+          description: ''
+        '404':
+          description: No telemetry readings recorded for this sensor yet
+  /api/v1/sensors/ingest/heartbeat/:
+    post:
+      operationId: sensors_ingest_heartbeat_create
+      description: Ingest heartbeat metrics (voltage, current, Wi-Fi RSSI, uptime)
+        from authorized ESP32 hardware.
+      summary: Ingest Device Heartbeat
+      tags:
+      - sensors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeartbeatIngestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HeartbeatIngestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HeartbeatIngestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          description: Heartbeat recorded
+        '200':
+          description: Duplicate heartbeat suppressed
+        '400':
+          description: Invalid hardware ID or measurements
+  /api/v1/sensors/ingest/telemetry/:
+    post:
+      operationId: sensors_ingest_telemetry_create
+      description: Securely ingest physical sensor measurements. Rejects unregistered
+        or mismatched device-sensor combinations.
+      summary: Ingest Sensor Telemetry
+      tags:
+      - sensors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelemetryIngestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TelemetryIngestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TelemetryIngestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          description: Telemetry reading recorded successfully
+        '400':
+          description: Validation error or mismatched sensor mapping
+        '401':
+          description: Unauthorized
+  /api/v1/sensors/readings/:
+    get:
+      operationId: sensors_readings_list
+      description: Query and filter all measured telemetry across campus by sensor
+        type, room, device, or time range.
+      summary: List Telemetry Readings
+      parameters:
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: end_time
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - in: query
+        name: sensor
+        schema:
+          type: integer
+      - in: query
+        name: sensor_type
+        schema:
+          type: string
+          enum:
+          - AMBIENT_LIGHT
+          - CURRENT_POWER
+          - HUMIDITY
+          - PIR_MOTION
+          - SOUND_ACOUSTIC
+          - TEMPERATURE
+        description: |-
+          * `PIR_MOTION` - PIR Motion Sensor
+          * `TEMPERATURE` - Temperature Sensor
+          * `HUMIDITY` - Humidity Sensor
+          * `AMBIENT_LIGHT` - Ambient Light (Lux) Sensor
+          * `SOUND_ACOUSTIC` - Sound / Acoustic Sensor
+          * `CURRENT_POWER` - Current / Power CT Clamp
+      - in: query
+        name: start_time
+        schema:
+          type: string
+          format: date-time
+      tags:
+      - sensors
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTelemetryReadingList'
+          description: ''
+  /api/v1/sensors/readings/{id}/:
+    get:
+      operationId: sensors_readings_retrieve
+      description: View a specific telemetry measurement.
+      summary: Get Telemetry Reading Record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this telemetry reading.
+        required: true
+      tags:
+      - sensors
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryReading'
+          description: ''
+  /api/v1/telemetry/:
+    get:
+      operationId: telemetry_list
+      description: Filter and search all campus sensors (PIR, Temp, Lux, etc.).
+      summary: List Sensors
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: sensor_type
+        schema:
+          type: string
+          enum:
+          - AMBIENT_LIGHT
+          - CURRENT_POWER
+          - HUMIDITY
+          - PIR_MOTION
+          - SOUND_ACOUSTIC
+          - TEMPERATURE
+        description: |-
+          * `PIR_MOTION` - PIR Motion Sensor
+          * `TEMPERATURE` - Temperature Sensor
+          * `HUMIDITY` - Humidity Sensor
+          * `AMBIENT_LIGHT` - Ambient Light (Lux) Sensor
+          * `SOUND_ACOUSTIC` - Sound / Acoustic Sensor
+          * `CURRENT_POWER` - Current / Power CT Clamp
+      tags:
+      - telemetry
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSensorListList'
+          description: ''
+    post:
+      operationId: telemetry_create
+      description: Register a new sensor and map it to a room & device (Admin only).
+      summary: Register Sensor
+      tags:
+      - telemetry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorCreateUpdate'
+          description: ''
+  /api/v1/telemetry/{id}/:
+    get:
+      operationId: telemetry_retrieve
+      description: Retrieve sensor configuration, room assignment, and latest telemetry.
+      summary: Get Sensor Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - telemetry
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorDetail'
+          description: ''
+    put:
+      operationId: telemetry_update
+      description: Update sensor metadata, active state, or model (Admin only).
+      summary: Update Sensor
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - telemetry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SensorCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorCreateUpdate'
+          description: ''
+    patch:
+      operationId: telemetry_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - telemetry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSensorCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSensorCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSensorCreateUpdateRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorCreateUpdate'
+          description: ''
+    delete:
+      operationId: telemetry_destroy
+      description: Remove a sensor (Admin only).
+      summary: Deregister Sensor
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - telemetry
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/telemetry/{id}/history/:
+    get:
+      operationId: telemetry_history_list
+      description: Paginated or time-bounded telemetry history for this sensor.
+      summary: Get Sensor Readings History
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: end_time
+        schema:
+          type: string
+        description: ISO 8601 end timestamp filter
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: sensor_type
+        schema:
+          type: string
+          enum:
+          - AMBIENT_LIGHT
+          - CURRENT_POWER
+          - HUMIDITY
+          - PIR_MOTION
+          - SOUND_ACOUSTIC
+          - TEMPERATURE
+        description: |-
+          * `PIR_MOTION` - PIR Motion Sensor
+          * `TEMPERATURE` - Temperature Sensor
+          * `HUMIDITY` - Humidity Sensor
+          * `AMBIENT_LIGHT` - Ambient Light (Lux) Sensor
+          * `SOUND_ACOUSTIC` - Sound / Acoustic Sensor
+          * `CURRENT_POWER` - Current / Power CT Clamp
+      - in: query
+        name: start_time
+        schema:
+          type: string
+        description: ISO 8601 start timestamp filter
+      tags:
+      - telemetry
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTelemetryReadingList'
+          description: ''
+  /api/v1/telemetry/{id}/latest/:
+    get:
+      operationId: telemetry_latest_retrieve
+      description: Returns the most recent measured value for this specific sensor.
+      summary: Get Latest Sensor Reading
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this sensor.
+        required: true
+      tags:
+      - telemetry
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryReading'
+          description: ''
+        '404':
+          description: No telemetry readings recorded for this sensor yet
+  /api/v1/telemetry/ingest/heartbeat/:
+    post:
+      operationId: telemetry_ingest_heartbeat_create
+      description: Ingest heartbeat metrics (voltage, current, Wi-Fi RSSI, uptime)
+        from authorized ESP32 hardware.
+      summary: Ingest Device Heartbeat
+      tags:
+      - telemetry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeartbeatIngestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HeartbeatIngestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HeartbeatIngestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          description: Heartbeat recorded
+        '200':
+          description: Duplicate heartbeat suppressed
+        '400':
+          description: Invalid hardware ID or measurements
+  /api/v1/telemetry/ingest/telemetry/:
+    post:
+      operationId: telemetry_ingest_telemetry_create
+      description: Securely ingest physical sensor measurements. Rejects unregistered
+        or mismatched device-sensor combinations.
+      summary: Ingest Sensor Telemetry
+      tags:
+      - telemetry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelemetryIngestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TelemetryIngestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TelemetryIngestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          description: Telemetry reading recorded successfully
+        '400':
+          description: Validation error or mismatched sensor mapping
+        '401':
+          description: Unauthorized
+  /api/v1/telemetry/readings/:
+    get:
+      operationId: telemetry_readings_list
+      description: Query and filter all measured telemetry across campus by sensor
+        type, room, device, or time range.
+      summary: List Telemetry Readings
+      parameters:
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: end_time
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - in: query
+        name: sensor
+        schema:
+          type: integer
+      - in: query
+        name: sensor_type
+        schema:
+          type: string
+          enum:
+          - AMBIENT_LIGHT
+          - CURRENT_POWER
+          - HUMIDITY
+          - PIR_MOTION
+          - SOUND_ACOUSTIC
+          - TEMPERATURE
+        description: |-
+          * `PIR_MOTION` - PIR Motion Sensor
+          * `TEMPERATURE` - Temperature Sensor
+          * `HUMIDITY` - Humidity Sensor
+          * `AMBIENT_LIGHT` - Ambient Light (Lux) Sensor
+          * `SOUND_ACOUSTIC` - Sound / Acoustic Sensor
+          * `CURRENT_POWER` - Current / Power CT Clamp
+      - in: query
+        name: start_time
+        schema:
+          type: string
+          format: date-time
+      tags:
+      - telemetry
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTelemetryReadingList'
+          description: ''
+  /api/v1/telemetry/readings/{id}/:
+    get:
+      operationId: telemetry_readings_retrieve
+      description: View a specific telemetry measurement.
+      summary: Get Telemetry Reading Record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this telemetry reading.
+        required: true
+      tags:
+      - telemetry
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryReading'
+          description: ''
 components:
   schemas:
+    AssignRoomRequest:
+      type: object
+      properties:
+        room_id:
+          type: integer
+      required:
+      - room_id
+    Building:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        code:
+          type: string
+          maxLength: 32
+        description:
+          type: string
+        total_floors:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        floors_count:
+          type: integer
+          readOnly: true
+        rooms_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - floors_count
+      - id
+      - name
+      - rooms_count
+    BuildingRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        code:
+          type: string
+          minLength: 1
+          maxLength: 32
+        description:
+          type: string
+        total_floors:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - code
+      - name
     ChangePasswordRequest:
       type: object
       properties:
@@ -307,6 +2601,436 @@ components:
       required:
       - password
       - username
+    DeviceCommandRequest:
+      type: object
+      properties:
+        channel_index:
+          type: integer
+          minimum: 1
+        target_state:
+          type: boolean
+        reason:
+          type: string
+          default: ''
+      required:
+      - channel_index
+      - target_state
+    DeviceCreate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        hardware_id:
+          type: string
+          maxLength: 64
+        device_type:
+          $ref: '#/components/schemas/DeviceTypeEnum'
+        room:
+          type: integer
+        mac_address:
+          type: string
+          maxLength: 32
+        ip_address:
+          type: string
+          nullable: true
+        firmware_version:
+          type: string
+          maxLength: 32
+        automation_enabled:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - hardware_id
+      - id
+      - name
+      - room
+    DeviceCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        hardware_id:
+          type: string
+          minLength: 1
+          maxLength: 64
+        device_type:
+          $ref: '#/components/schemas/DeviceTypeEnum'
+        room:
+          type: integer
+        mac_address:
+          type: string
+          maxLength: 32
+        ip_address:
+          type: string
+          nullable: true
+          minLength: 1
+        firmware_version:
+          type: string
+          minLength: 1
+          maxLength: 32
+        automation_enabled:
+          type: boolean
+        channels:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          writeOnly: true
+          description: 'Optional list of relay channel definitions, e.g. [{''channel_index'':
+            1, ''label'': ''Ceiling Lights''}]'
+      required:
+      - hardware_id
+      - name
+      - room
+    DeviceDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        hardware_id:
+          type: string
+          maxLength: 64
+        device_type:
+          $ref: '#/components/schemas/DeviceTypeEnum'
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        calculated_status:
+          type: string
+          readOnly: true
+        mac_address:
+          type: string
+          maxLength: 32
+        ip_address:
+          type: string
+          nullable: true
+        firmware_version:
+          type: string
+          maxLength: 32
+        automation_enabled:
+          type: boolean
+        uptime_hours:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        wifi_rssi:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        room:
+          type: integer
+        room_number:
+          type: string
+          readOnly: true
+        room_name:
+          type: string
+          readOnly: true
+        floor_level:
+          type: integer
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        building_name:
+          type: string
+          readOnly: true
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelayChannel'
+          readOnly: true
+        latest_heartbeat:
+          type: string
+          readOnly: true
+        last_communication_time:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - building_name
+      - calculated_status
+      - channels
+      - created_at
+      - floor_level
+      - hardware_id
+      - id
+      - last_communication_time
+      - latest_heartbeat
+      - name
+      - room
+      - room_name
+      - room_number
+    DeviceHeartbeat:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        voltage:
+          type: number
+          format: double
+        current:
+          type: number
+          format: double
+        power_watts:
+          type: number
+          format: double
+        wifi_rssi:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        uptime_seconds:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - timestamp
+    DeviceList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        hardware_id:
+          type: string
+          maxLength: 64
+        device_type:
+          $ref: '#/components/schemas/DeviceTypeEnum'
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        calculated_status:
+          type: string
+          readOnly: true
+        mac_address:
+          type: string
+          maxLength: 32
+        ip_address:
+          type: string
+          nullable: true
+        firmware_version:
+          type: string
+          maxLength: 32
+        automation_enabled:
+          type: boolean
+        uptime_hours:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        wifi_rssi:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        room:
+          type: integer
+        room_number:
+          type: string
+          readOnly: true
+        room_name:
+          type: string
+          readOnly: true
+        floor_level:
+          type: integer
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        building_name:
+          type: string
+          readOnly: true
+        channels_count:
+          type: integer
+          readOnly: true
+        last_heartbeat_timestamp:
+          type: string
+          readOnly: true
+        last_communication_time:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - building_name
+      - calculated_status
+      - channels_count
+      - created_at
+      - floor_level
+      - hardware_id
+      - id
+      - last_communication_time
+      - last_heartbeat_timestamp
+      - name
+      - room
+      - room_name
+      - room_number
+    DeviceListRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        hardware_id:
+          type: string
+          minLength: 1
+          maxLength: 64
+        device_type:
+          $ref: '#/components/schemas/DeviceTypeEnum'
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        mac_address:
+          type: string
+          maxLength: 32
+        ip_address:
+          type: string
+          nullable: true
+          minLength: 1
+        firmware_version:
+          type: string
+          minLength: 1
+          maxLength: 32
+        automation_enabled:
+          type: boolean
+        uptime_hours:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        wifi_rssi:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        room:
+          type: integer
+      required:
+      - hardware_id
+      - name
+      - room
+    DeviceTypeEnum:
+      enum:
+      - ESP32_NODE
+      - RELAY_MODULE
+      - SMART_POWER_SOCKET
+      - CURRENT_SENSOR
+      - LIGHTING_BANK
+      - HVAC_FAN_CONTROLLER
+      type: string
+      description: |-
+        * `ESP32_NODE` - ESP32 Node
+        * `RELAY_MODULE` - Relay Module
+        * `SMART_POWER_SOCKET` - Smart Power Socket
+        * `CURRENT_SENSOR` - Current Sensor
+        * `LIGHTING_BANK` - Lighting Bank
+        * `HVAC_FAN_CONTROLLER` - HVAC / Fan Controller
+    Floor:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        building:
+          type: integer
+        building_name:
+          type: string
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        level:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          default: 1
+        name:
+          type: string
+          maxLength: 64
+        rooms_count:
+          type: integer
+          readOnly: true
+      required:
+      - building
+      - building_code
+      - building_name
+      - id
+      - name
+      - rooms_count
+    FloorRequest:
+      type: object
+      properties:
+        building:
+          type: integer
+        level:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          default: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+      required:
+      - building
+      - name
+    HeartbeatIngestRequest:
+      type: object
+      properties:
+        device_hardware_id:
+          type: string
+          minLength: 1
+        voltage:
+          type: number
+          format: double
+          minimum: 0.0
+          default: 230.0
+        current:
+          type: number
+          format: double
+          minimum: 0.0
+          default: 0.0
+        power_watts:
+          type: number
+          format: double
+          minimum: 0.0
+          default: 0.0
+        wifi_rssi:
+          type: integer
+          maximum: 0
+          minimum: -120
+          default: -60
+        uptime_seconds:
+          type: integer
+          minimum: 0
+          default: 0
+      required:
+      - device_hardware_id
     LogoutRequest:
       type: object
       properties:
@@ -315,6 +3039,222 @@ components:
           minLength: 1
       required:
       - refresh
+    OccupancyStateEnum:
+      enum:
+      - EMPTY
+      - ACTIVE
+      - IDLE_TRANSITION
+      type: string
+      description: |-
+        * `EMPTY` - Empty
+        * `ACTIVE` - Active
+        * `IDLE_TRANSITION` - Idle Transition
+    PaginatedBuildingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Building'
+    PaginatedDeviceHeartbeatList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceHeartbeat'
+    PaginatedDeviceListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceList'
+    PaginatedFloorList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Floor'
+    PaginatedRelayChannelList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelayChannel'
+    PaginatedRoomListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomList'
+    PaginatedSensorListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorList'
+    PaginatedTelemetryReadingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TelemetryReading'
+    PatchedAssignRoomRequest:
+      type: object
+      properties:
+        room_id:
+          type: integer
+    PatchedBuildingRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        code:
+          type: string
+          minLength: 1
+          maxLength: 32
+        description:
+          type: string
+        total_floors:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
     PatchedCurrentUserProfileRequest:
       type: object
       properties:
@@ -334,6 +3274,134 @@ components:
           maxLength: 150
         profile:
           $ref: '#/components/schemas/StaffProfileRequest'
+    PatchedDeviceListRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        hardware_id:
+          type: string
+          minLength: 1
+          maxLength: 64
+        device_type:
+          $ref: '#/components/schemas/DeviceTypeEnum'
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        mac_address:
+          type: string
+          maxLength: 32
+        ip_address:
+          type: string
+          nullable: true
+          minLength: 1
+        firmware_version:
+          type: string
+          minLength: 1
+          maxLength: 32
+        automation_enabled:
+          type: boolean
+        uptime_hours:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        wifi_rssi:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        room:
+          type: integer
+    PatchedFloorRequest:
+      type: object
+      properties:
+        building:
+          type: integer
+        level:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          default: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+    PatchedRoomListRequest:
+      type: object
+      properties:
+        floor:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        room_number:
+          type: string
+          minLength: 1
+          maxLength: 32
+        room_type:
+          $ref: '#/components/schemas/RoomTypeEnum'
+        occupancy_state:
+          $ref: '#/components/schemas/OccupancyStateEnum'
+        ml_confidence_score:
+          type: number
+          format: double
+        idle_timer_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+    PatchedSensorCreateUpdateRequest:
+      type: object
+      properties:
+        room:
+          type: integer
+        device:
+          type: integer
+          nullable: true
+        sensor_type:
+          $ref: '#/components/schemas/SensorTypeEnum'
+        sensor_model:
+          type: string
+          minLength: 1
+          maxLength: 64
+        unit_of_measurement:
+          type: string
+          minLength: 1
+          maxLength: 16
+        is_active:
+          type: boolean
+    RelayChannel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        channel_index:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        label:
+          type: string
+          maxLength: 128
+        is_on:
+          type: boolean
+        power_watts:
+          type: number
+          format: double
+        is_controllable:
+          type: boolean
+        safety_locked:
+          type: boolean
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - label
+      - updated_at
     RoleEnum:
       enum:
       - ADMIN
@@ -342,6 +3410,369 @@ components:
       description: |-
         * `ADMIN` - Administrator
         * `STAFF` - Staff
+    RoomDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        floor:
+          type: integer
+        floor_level:
+          type: integer
+          readOnly: true
+        floor_name:
+          type: string
+          readOnly: true
+        building_id:
+          type: integer
+          readOnly: true
+        building_name:
+          type: string
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        room_number:
+          type: string
+          maxLength: 32
+        room_type:
+          $ref: '#/components/schemas/RoomTypeEnum'
+        occupancy_state:
+          $ref: '#/components/schemas/OccupancyStateEnum'
+        ml_confidence_score:
+          type: number
+          format: double
+        idle_timer_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+        devices:
+          type: string
+          readOnly: true
+        sensors:
+          type: string
+          readOnly: true
+        last_state_change:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - building_id
+      - building_name
+      - created_at
+      - devices
+      - floor
+      - floor_level
+      - floor_name
+      - id
+      - last_state_change
+      - name
+      - room_number
+      - sensors
+    RoomList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        floor:
+          type: integer
+        floor_level:
+          type: integer
+          readOnly: true
+        floor_name:
+          type: string
+          readOnly: true
+        building_id:
+          type: integer
+          readOnly: true
+        building_name:
+          type: string
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        room_number:
+          type: string
+          maxLength: 32
+        room_type:
+          $ref: '#/components/schemas/RoomTypeEnum'
+        occupancy_state:
+          $ref: '#/components/schemas/OccupancyStateEnum'
+        ml_confidence_score:
+          type: number
+          format: double
+        idle_timer_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+        devices_count:
+          type: integer
+          readOnly: true
+        sensors_count:
+          type: integer
+          readOnly: true
+        last_state_change:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - building_id
+      - building_name
+      - created_at
+      - devices_count
+      - floor
+      - floor_level
+      - floor_name
+      - id
+      - last_state_change
+      - name
+      - room_number
+      - sensors_count
+    RoomListRequest:
+      type: object
+      properties:
+        floor:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        room_number:
+          type: string
+          minLength: 1
+          maxLength: 32
+        room_type:
+          $ref: '#/components/schemas/RoomTypeEnum'
+        occupancy_state:
+          $ref: '#/components/schemas/OccupancyStateEnum'
+        ml_confidence_score:
+          type: number
+          format: double
+        idle_timer_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - floor
+      - name
+      - room_number
+    RoomTypeEnum:
+      enum:
+      - Classroom
+      - Computer Lab
+      - Seminar Hall
+      - Research Lab
+      type: string
+      description: |-
+        * `Classroom` - Classroom
+        * `Computer Lab` - Computer Lab
+        * `Seminar Hall` - Seminar Hall
+        * `Research Lab` - Research Lab
+    SensorCreateUpdate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        room:
+          type: integer
+        device:
+          type: integer
+          nullable: true
+        sensor_type:
+          $ref: '#/components/schemas/SensorTypeEnum'
+        sensor_model:
+          type: string
+          maxLength: 64
+        unit_of_measurement:
+          type: string
+          maxLength: 16
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - room
+      - sensor_type
+    SensorCreateUpdateRequest:
+      type: object
+      properties:
+        room:
+          type: integer
+        device:
+          type: integer
+          nullable: true
+        sensor_type:
+          $ref: '#/components/schemas/SensorTypeEnum'
+        sensor_model:
+          type: string
+          minLength: 1
+          maxLength: 64
+        unit_of_measurement:
+          type: string
+          minLength: 1
+          maxLength: 16
+        is_active:
+          type: boolean
+      required:
+      - room
+      - sensor_type
+    SensorDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sensor_type:
+          $ref: '#/components/schemas/SensorTypeEnum'
+        sensor_model:
+          type: string
+          maxLength: 64
+        unit_of_measurement:
+          type: string
+          maxLength: 16
+        is_active:
+          type: boolean
+        room:
+          type: integer
+        room_number:
+          type: string
+          readOnly: true
+        room_name:
+          type: string
+          readOnly: true
+        floor_level:
+          type: integer
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        building_name:
+          type: string
+          readOnly: true
+        device:
+          type: integer
+          nullable: true
+        device_name:
+          type: string
+          readOnly: true
+        device_hardware_id:
+          type: string
+          readOnly: true
+        latest_reading:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - building_name
+      - created_at
+      - device_hardware_id
+      - device_name
+      - floor_level
+      - id
+      - latest_reading
+      - room
+      - room_name
+      - room_number
+      - sensor_type
+    SensorList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sensor_type:
+          $ref: '#/components/schemas/SensorTypeEnum'
+        sensor_model:
+          type: string
+          maxLength: 64
+        unit_of_measurement:
+          type: string
+          maxLength: 16
+        is_active:
+          type: boolean
+        room:
+          type: integer
+        room_number:
+          type: string
+          readOnly: true
+        room_name:
+          type: string
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        device:
+          type: integer
+          nullable: true
+        device_hardware_id:
+          type: string
+          readOnly: true
+        latest_reading:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - created_at
+      - device_hardware_id
+      - id
+      - latest_reading
+      - room
+      - room_name
+      - room_number
+      - sensor_type
+    SensorTypeEnum:
+      enum:
+      - PIR_MOTION
+      - TEMPERATURE
+      - HUMIDITY
+      - AMBIENT_LIGHT
+      - SOUND_ACOUSTIC
+      - CURRENT_POWER
+      type: string
+      description: |-
+        * `PIR_MOTION` - PIR Motion Sensor
+        * `TEMPERATURE` - Temperature Sensor
+        * `HUMIDITY` - Humidity Sensor
+        * `AMBIENT_LIGHT` - Ambient Light (Lux) Sensor
+        * `SOUND_ACOUSTIC` - Sound / Acoustic Sensor
+        * `CURRENT_POWER` - Current / Power CT Clamp
     StaffProfile:
       type: object
       properties:
@@ -396,6 +3827,70 @@ components:
           type: boolean
         alert_push_enabled:
           type: boolean
+    StatusEnum:
+      enum:
+      - ONLINE
+      - OFFLINE
+      - DEGRADED
+      type: string
+      description: |-
+        * `ONLINE` - Online
+        * `OFFLINE` - Offline
+        * `DEGRADED` - Degraded
+    TelemetryIngestRequest:
+      type: object
+      properties:
+        device_hardware_id:
+          type: string
+          minLength: 1
+        sensor_id:
+          type: integer
+        value:
+          type: number
+          format: double
+        raw_payload: {}
+      required:
+      - device_hardware_id
+      - sensor_id
+      - value
+    TelemetryReading:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sensor:
+          type: integer
+        sensor_type:
+          type: string
+          readOnly: true
+        unit:
+          type: string
+          readOnly: true
+        room_number:
+          type: string
+          readOnly: true
+        device_hardware_id:
+          type: string
+          readOnly: true
+        value:
+          type: number
+          format: double
+        raw_payload:
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - device_hardware_id
+      - id
+      - room_number
+      - sensor
+      - sensor_type
+      - timestamp
+      - unit
+      - value
     TokenRefresh:
       type: object
       properties:

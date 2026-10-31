@@ -1,8 +1,9 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
+from apps.devices.views import DeviceViewSet
 
 app_name = 'devices'
 
-urlpatterns = [
-    # Device endpoints
-]
+router = DefaultRouter()
+router.register(r'', DeviceViewSet, basename='device')
 
+urlpatterns = router.urls
