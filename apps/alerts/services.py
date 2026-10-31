@@ -97,10 +97,12 @@ class AnomalyDetectionService:
         is_missing = False
         if not latest_hb:
             # Only flag if device was registered more than 10 minutes ago
-            if (now - device.created_at).total_seconds() > 600:
+            created_at = getattr(device, 'created_at', None)
+            if created_at and (now - created_at).total_seconds() > 600:
                 is_missing = True
         else:
-            if (now - latest_hb.timestamp).total_seconds() > HEARTBEAT_TIMEOUT_SECONDS:
+            hb_timestamp = getattr(latest_hb, 'timestamp', None)
+            if hb_timestamp and (now - hb_timestamp).total_seconds() > HEARTBEAT_TIMEOUT_SECONDS:
                 is_missing = True
 
         if is_missing:
@@ -162,4 +164,3 @@ class AnomalyDetectionService:
                 return alert
 
         return None
-

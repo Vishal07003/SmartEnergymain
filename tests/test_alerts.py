@@ -121,28 +121,28 @@ class TestAlertManagementAndAnomalyDetection:
     def test_acknowledge_alert(self, api_client, staff_user, alert_setup):
         api_client.force_authenticate(user=staff_user)
         alert = alert_setup['alert_1']
-        assert alert.is_acknowledged is False
+        assert not alert.is_acknowledged
 
         response = api_client.patch(f'/api/v1/alerts/{alert.id}/acknowledge/')
         assert response.status_code == 200
         assert response.data['status'] == 'ACKNOWLEDGED'
 
         alert.refresh_from_db()
-        assert alert.is_acknowledged is True
+        assert alert.is_acknowledged
         assert alert.acknowledged_by == 'Faculty Member'
         assert alert.acknowledged_at is not None
 
     def test_resolve_alert(self, api_client, staff_user, alert_setup):
         api_client.force_authenticate(user=staff_user)
         alert = alert_setup['alert_1']
-        assert alert.is_resolved is False
+        assert not alert.is_resolved
 
         response = api_client.patch(f'/api/v1/alerts/{alert.id}/resolve/')
         assert response.status_code == 200
         assert response.data['status'] == 'RESOLVED'
 
         alert.refresh_from_db()
-        assert alert.is_resolved is True
+        assert alert.is_resolved
         assert alert.resolved_by == 'Faculty Member'
 
     def test_alert_summary_endpoint(self, api_client, staff_user, alert_setup):
