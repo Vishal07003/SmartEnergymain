@@ -50,6 +50,66 @@ paths:
               schema:
                 $ref: '#/components/schemas/CurrentUserProfile'
           description: ''
+  /api/v1/analytics/buildings/:
+    get:
+      operationId: analytics_buildings_retrieve
+      description: Compares cumulative energy consumption across all campus buildings
+        for the designated trailing period.
+      summary: Building Energy Comparison
+      parameters:
+      - in: query
+        name: days
+        schema:
+          type: integer
+          default: 30
+        description: 'Trailing period in days (default: 30)'
+      tags:
+      - analytics
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildingComparisonResponse'
+          description: ''
+  /api/v1/analytics/summary/:
+    get:
+      operationId: analytics_summary_retrieve
+      description: Returns total kWh consumption, average power, peak power, and room
+        breakdowns for institutional audits.
+      summary: Campus Energy Analytics Summary
+      parameters:
+      - in: query
+        name: building_id
+        schema:
+          type: integer
+        description: Filter by building ID
+      - in: query
+        name: days
+        schema:
+          type: integer
+          default: 7
+        description: 'Number of trailing days (default: 7)'
+      - in: query
+        name: room_id
+        schema:
+          type: integer
+        description: Filter by room ID
+      tags:
+      - analytics
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampusEnergySummary'
+          description: ''
   /api/v1/auth/change-password/:
     post:
       operationId: auth_change_password_create
@@ -779,6 +839,291 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeviceHeartbeatList'
           description: ''
+  /api/v1/energy/analytics/buildings/:
+    get:
+      operationId: energy_analytics_buildings_retrieve
+      description: Compares cumulative energy consumption across all campus buildings
+        for the designated trailing period.
+      summary: Building Energy Comparison
+      parameters:
+      - in: query
+        name: days
+        schema:
+          type: integer
+          default: 30
+        description: 'Trailing period in days (default: 30)'
+      tags:
+      - energy
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildingComparisonResponse'
+          description: ''
+  /api/v1/energy/analytics/summary/:
+    get:
+      operationId: energy_analytics_summary_retrieve
+      description: Returns total kWh consumption, average power, peak power, and room
+        breakdowns for institutional audits.
+      summary: Campus Energy Analytics Summary
+      parameters:
+      - in: query
+        name: building_id
+        schema:
+          type: integer
+        description: Filter by building ID
+      - in: query
+        name: days
+        schema:
+          type: integer
+          default: 7
+        description: 'Number of trailing days (default: 7)'
+      - in: query
+        name: room_id
+        schema:
+          type: integer
+        description: Filter by room ID
+      tags:
+      - energy
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampusEnergySummary'
+          description: ''
+  /api/v1/energy/daily/:
+    get:
+      operationId: energy_daily_list
+      description: Query daily aggregated kWh and peak power by room.
+      summary: List Daily Energy Aggregations
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: end_date
+        schema:
+          type: string
+          format: date
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - in: query
+        name: start_date
+        schema:
+          type: string
+          format: date
+      tags:
+      - energy
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDailyEnergyAggregationList'
+          description: ''
+  /api/v1/energy/daily/{id}/:
+    get:
+      operationId: energy_daily_retrieve
+      description: Retrieve daily summary record.
+      summary: Get Daily Aggregation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this daily energy aggregation.
+        required: true
+      tags:
+      - energy
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyEnergyAggregation'
+          description: ''
+  /api/v1/energy/ingest/:
+    post:
+      operationId: energy_ingest_create
+      description: Record validated electrical power telemetry for an institutional
+        room/device.
+      summary: Ingest Energy Reading
+      tags:
+      - energy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnergyReadingIngestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EnergyReadingIngestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EnergyReadingIngestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          description: Energy reading recorded
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+  /api/v1/energy/readings/:
+    get:
+      operationId: energy_readings_list
+      description: Query telemetry energy measurements across rooms and buildings.
+      summary: List Energy Readings
+      parameters:
+      - in: query
+        name: building
+        schema:
+          type: integer
+      - in: query
+        name: building_code
+        schema:
+          type: string
+      - in: query
+        name: device
+        schema:
+          type: integer
+      - in: query
+        name: end_time
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: hardware_id
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - in: query
+        name: start_time
+        schema:
+          type: string
+          format: date-time
+      tags:
+      - energy
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEnergyReadingList'
+          description: ''
+  /api/v1/energy/readings/{id}/:
+    get:
+      operationId: energy_readings_retrieve
+      description: Retrieve single energy measurement record.
+      summary: Get Energy Reading
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this energy reading.
+        required: true
+      tags:
+      - energy
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyReading'
+          description: ''
+  /api/v1/energy/readings/latest-by-room/:
+    get:
+      operationId: energy_readings_latest_by_room_retrieve
+      description: Returns the single most recent energy measurement recorded for
+        a specified room ID.
+      summary: Get Latest Room Energy Reading
+      parameters:
+      - in: query
+        name: room_id
+        schema:
+          type: integer
+        description: Room ID
+        required: true
+      tags:
+      - energy
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyReading'
+          description: ''
+        '404':
+          description: No readings found for room
   /api/v1/rooms/:
     get:
       operationId: rooms_list
@@ -2503,6 +2848,42 @@ components:
       - id
       - name
       - rooms_count
+    BuildingComparisonResponse:
+      type: object
+      properties:
+        period_days:
+          type: integer
+        since_date:
+          type: string
+        buildings:
+          type: array
+          items:
+            $ref: '#/components/schemas/BuildingEnergyItem'
+      required:
+      - buildings
+      - period_days
+      - since_date
+    BuildingEnergyItem:
+      type: object
+      properties:
+        building_id:
+          type: integer
+        building_name:
+          type: string
+        building_code:
+          type: string
+        total_kwh:
+          type: number
+          format: double
+        peak_power_watts:
+          type: number
+          format: double
+      required:
+      - building_code
+      - building_id
+      - building_name
+      - peak_power_watts
+      - total_kwh
     BuildingRequest:
       type: object
       properties:
@@ -2523,6 +2904,34 @@ components:
       required:
       - code
       - name
+    CampusEnergySummary:
+      type: object
+      properties:
+        total_consumption_kwh:
+          type: number
+          format: double
+        average_power_watts:
+          type: number
+          format: double
+        peak_power_watts:
+          type: number
+          format: double
+        active_monitoring_rooms:
+          type: integer
+        start_date:
+          type: string
+        end_date:
+          type: string
+        waste_estimate_notice:
+          type: string
+      required:
+      - active_monitoring_rooms
+      - average_power_watts
+      - end_date
+      - peak_power_watts
+      - start_date
+      - total_consumption_kwh
+      - waste_estimate_notice
     ChangePasswordRequest:
       type: object
       properties:
@@ -2601,6 +3010,46 @@ components:
       required:
       - password
       - username
+    DailyEnergyAggregation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        room:
+          type: integer
+        room_number:
+          type: string
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        total_kwh:
+          type: number
+          format: double
+        peak_power_watts:
+          type: number
+          format: double
+        wasted_kwh_estimate:
+          type: number
+          format: double
+        saved_kwh_estimate:
+          type: number
+          format: double
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - created_at
+      - date
+      - id
+      - room
+      - room_number
     DeviceCommandRequest:
       type: object
       properties:
@@ -2950,6 +3399,97 @@ components:
         * `CURRENT_SENSOR` - Current Sensor
         * `LIGHTING_BANK` - Lighting Bank
         * `HVAC_FAN_CONTROLLER` - HVAC / Fan Controller
+    EnergyReading:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        room:
+          type: integer
+        room_number:
+          type: string
+          readOnly: true
+        building_code:
+          type: string
+          readOnly: true
+        device:
+          type: integer
+          nullable: true
+        device_hardware_id:
+          type: string
+          readOnly: true
+        voltage_volts:
+          type: number
+          format: double
+        current_amps:
+          type: number
+          format: double
+        active_power_watts:
+          type: number
+          format: double
+        power_factor:
+          type: number
+          format: double
+        frequency_hz:
+          type: number
+          format: double
+        energy_kwh:
+          type: number
+          format: double
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - building_code
+      - device_hardware_id
+      - id
+      - room
+      - room_number
+      - timestamp
+    EnergyReadingIngestRequest:
+      type: object
+      properties:
+        room_id:
+          type: integer
+        device_hardware_id:
+          type: string
+          nullable: true
+          minLength: 1
+        voltage_volts:
+          type: number
+          format: double
+          minimum: 0.0
+          default: 230.0
+        current_amps:
+          type: number
+          format: double
+          minimum: 0.0
+        active_power_watts:
+          type: number
+          format: double
+          minimum: 0.0
+        power_factor:
+          type: number
+          format: double
+          maximum: 1.0
+          minimum: 0.0
+          default: 0.95
+        frequency_hz:
+          type: number
+          format: double
+          minimum: 0.0
+          default: 50.0
+        energy_kwh:
+          type: number
+          format: double
+          minimum: 0.0
+          default: 0.0
+      required:
+      - active_power_watts
+      - current_amps
+      - room_id
     Floor:
       type: object
       properties:
@@ -3072,6 +3612,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Building'
+    PaginatedDailyEnergyAggregationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailyEnergyAggregation'
     PaginatedDeviceHeartbeatList:
       type: object
       required:
@@ -3118,6 +3681,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceList'
+    PaginatedEnergyReadingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnergyReading'
     PaginatedFloorList:
       type: object
       required:
