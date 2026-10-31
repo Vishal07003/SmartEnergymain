@@ -1,13 +1,113 @@
-venv/
-*.pyc
-__pycache__/
-*.sqlite3
+
+# =====================================
+# ENVIRONMENT VARIABLES & SECRETS
+# =====================================
 .env
+.env.*
+!.env.example
+!.env.sample
+
+# =====================================
+# PYTHON / DJANGO BACKEND
+# =====================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 media/
-logs/*.log
 staticfiles/
+
+# Python testing and coverage
 .pytest_cache/
 .coverage
 htmlcov/
-.venv
-.env.example
+.tox/
+.nox/
+
+# =====================================
+# DJANGO / POSTGRESQL LOCAL FILES
+# =====================================
+*.dump
+*.backup
+*.sql.gz
+
+# =====================================
+# NODE.JS / REACT NATIVE
+# =====================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =====================================
+# REACT NATIVE / ANDROID
+# =====================================
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/.cxx/
+android/.idea/
+android/captures/
+
+ios/Pods/
+ios/build/
+ios/DerivedData/
+ios/*.xcworkspace/xcuserdata/
+
+# =====================================
+# BUILD OUTPUTS
+# =====================================
+dist/
+build/
+.expo/
+.metro-health-check*
+
+# =====================================
+# IDE / EDITOR
+# =====================================
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+.idea/
+*.sublime-workspace
+
+# =====================================
+# OPERATING SYSTEM
+# =====================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =====================================
+# AI / MACHINE LEARNING
+# =====================================
+.ipynb_checkpoints/
+*.pkl
+*.joblib
+*.h5
+*.onnx
+*.pt
+*.pth
+
+# =====================================
+# TEMPORARY FILES
+# =====================================
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
