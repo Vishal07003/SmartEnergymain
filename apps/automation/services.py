@@ -69,10 +69,12 @@ class AutomationExecutionEngine:
         if rule.condition_type == ConditionTypeChoices.VACANCY_TIMEOUT:
             if room.occupancy_state == OccupancyStateChoices.EMPTY:
                 # Check idle minutes or last_state_change duration
-                time_empty_minutes = (timezone.now() - room.last_state_change).total_seconds() / 60.0
-                if time_empty_minutes >= rule.threshold_value:
-                    should_trigger = True
-                    condition_reason = f"Room {room.room_number} vacant for {time_empty_minutes:.1f}m (Threshold: {rule.threshold_value}m)"
+                last_change = getattr(room, 'last_state_change', None)
+                if last_change:
+                    time_empty_minutes = (timezone.now() - last_change).total_seconds() / 60.0
+                    if time_empty_minutes >= rule.threshold_value:
+                        should_trigger = True
+                        condition_reason = f"Room {room.room_number} vacant for {time_empty_minutes:.1f}m (Threshold: {rule.threshold_value}m)"
 
         # Condition B: Room becomes ACTIVE
         elif rule.condition_type == ConditionTypeChoices.OCCUPANCY_ACTIVE:
@@ -107,8 +109,9 @@ class AutomationExecutionEngine:
             return None
 
         # Prevent duplicate execution: check if triggered within past 15 minutes for unchanged state
-        if not force and rule.last_triggered_at:
-            if (timezone.now() - rule.last_triggered_at).total_seconds() < 900:
+        last_trig = getattr(rule, 'last_triggered_at', None)
+        if not force and last_trig:
+            if (timezone.now() - last_trig).total_seconds() < 900:
                 return None
 
         # Execute configured action by queuing a validated DeviceCommand
@@ -140,8 +143,7 @@ class AutomationExecutionEngine:
             }
         )
 
-        rule.last_triggered_at = timezone.now()
-        rule.save(update_fields=['last_triggered_at'])
+        AutomationRule.objects.filter(pk=rule.pk).update(last_triggered_at=timezone.now())
 
         log = AutomationLog.objects.create(
             rule=rule,
