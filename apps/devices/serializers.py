@@ -230,3 +230,10 @@ class DeviceCommandSerializer(serializers.Serializer):
 
         attrs['channel_instance'] = channel
         return attrs
+
+
+class DeviceRotateTokenResponseSerializer(serializers.Serializer):
+    hardware_id = serializers.CharField()
+    auth_token = serializers.CharField(help_text="One-time plaintext secret token for device MQTT/HTTP authentication.")
+    message = serializers.CharField()
+
