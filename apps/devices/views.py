@@ -17,6 +17,7 @@ from apps.devices.serializers import (
     DeviceHeartbeatSerializer,
     AssignRoomSerializer,
     DeviceCommandSerializer,
+    DeviceRotateTokenResponseSerializer,
     compute_live_device_status,
 )
 from apps.devices.permissions import IsAdminOrReadOnlyStaffDevice, CanDispatchDeviceCommand
@@ -181,3 +182,43 @@ class DeviceViewSet(viewsets.ModelViewSet):
             "dispatched_by": request.user.username,
             "timestamp": timezone.now().isoformat()
         }, status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(
+        summary="Rotate Device Auth Token",
+        description="Generates, hashes and stores a new unique secret token for this device. Returns the raw secret once for device flashing/configuration (Admin only).",
+        responses={
+            200: DeviceRotateTokenResponseSerializer,
+            403: OpenApiResponse(description="Admin permission required"),
+        }
+    )
+    @action(detail=True, methods=['post'], url_path='rotate-token')
+    def rotate_token(self, request, pk=None):
+        if not (request.user and request.user.is_staff and getattr(request.user, 'role', '') == 'ADMIN'):
+            return Response({"detail": "Admin privileges required to rotate device credentials."}, status=status.HTTP_403_FORBIDDEN)
+        device = self.get_object()
+        raw_token = device.rotate_auth_token()
+        return Response({
+            "hardware_id": device.hardware_id,
+            "auth_token": raw_token,
+            "message": "Store this auth_token in device secure storage (NVS/Flash). It will not be shown again."
+        }, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Revoke Device Auth Token",
+        description="Revokes device authentication credentials immediately blocking MQTT ingestion (Admin only).",
+        responses={
+            200: OpenApiResponse(description="Credentials revoked"),
+            403: OpenApiResponse(description="Admin permission required"),
+        }
+    )
+    @action(detail=True, methods=['post'], url_path='revoke-token')
+    def revoke_token(self, request, pk=None):
+        if not (request.user and request.user.is_staff and getattr(request.user, 'role', '') == 'ADMIN'):
+            return Response({"detail": "Admin privileges required to revoke device credentials."}, status=status.HTTP_403_FORBIDDEN)
+        device = self.get_object()
+        device.revoke_auth_token()
+        return Response({
+            "hardware_id": device.hardware_id,
+            "message": "Device authentication credentials revoked successfully."
+        }, status=status.HTTP_200_OK)
+
