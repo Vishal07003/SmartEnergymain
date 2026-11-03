@@ -13,7 +13,7 @@ import time
 import json
 import logging
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 import paho.mqtt.client as mqtt
 
@@ -112,13 +112,13 @@ class ESP32DeviceSimulator:
         self.send_ack(cmd_id, self.channel_states[channel_index], notes="Relay switched successfully by ESP32 simulator")
 
     def send_ack(self, command_id: str, reported_state: bool, notes: str = ""):
-        ack_payload = {
+        ack_payload: Dict[str, Any] = {
             "auth_token": self.auth_token,
             "command_id": command_id,
             "reported_state": reported_state,
             "notes": notes,
             "simulated": True,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         self.client.publish(self.topic_ack, json.dumps(ack_payload), qos=1)
         logger.info("Published ACK for command %s on %s (state: %s)", command_id, self.topic_ack, reported_state)
@@ -127,10 +127,10 @@ class ESP32DeviceSimulator:
         """
         Publishes telemetry metrics with explicit 'simulated': True marker.
         """
-        payload = {
+        payload: Dict[str, Any] = {
             "auth_token": self.auth_token,
             "simulated": True,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "readings": sensor_readings or [
                 {"sensor_type": "TEMPERATURE", "value": round(23.5 + random.uniform(-1.0, 1.0), 2)},
                 {"sensor_type": "HUMIDITY", "value": round(55.0 + random.uniform(-3.0, 3.0), 1)},
@@ -156,7 +156,7 @@ class ESP32DeviceSimulator:
         Publishes periodic heartbeat packet.
         """
         self.uptime_seconds += 15
-        payload = {
+        payload: Dict[str, Any] = {
             "auth_token": self.auth_token,
             "simulated": True,
             "voltage": round(230.0 + random.uniform(-2.0, 2.0), 1),
@@ -164,7 +164,7 @@ class ESP32DeviceSimulator:
             "power_watts": 575.0,
             "wifi_rssi": self.wifi_rssi + random.randint(-2, 2),
             "uptime_seconds": self.uptime_seconds,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         self.client.publish(self.topic_heartbeat, json.dumps(payload), qos=1)
         logger.info("Published SIMULATED heartbeat to %s (uptime: %ss)", self.topic_heartbeat, self.uptime_seconds)
