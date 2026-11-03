@@ -201,6 +201,17 @@ else:
         },
     }
 
+# MQTT Broker Configuration (Paho MQTT Client)
+MQTT_BROKER_HOST = config('MQTT_BROKER_HOST', default='localhost')
+MQTT_BROKER_PORT = config('MQTT_BROKER_PORT', default=1883, cast=int)
+MQTT_USERNAME = config('MQTT_USERNAME', default='')
+MQTT_PASSWORD = config('MQTT_PASSWORD', default='')
+MQTT_CLIENT_ID = config('MQTT_CLIENT_ID', default='smart_energy_backend')
+MQTT_USE_TLS = config('MQTT_USE_TLS', default=False, cast=bool)
+MQTT_KEEPALIVE = config('MQTT_KEEPALIVE', default=60, cast=int)
+MQTT_TOPIC_PREFIX = config('MQTT_TOPIC_PREFIX', default='smart-energy')
+MQTT_QOS = config('MQTT_QOS', default=1, cast=int)
+
 # Centralized Institutional Logging Configuration
 LOGGING = {
     'version': 1,
