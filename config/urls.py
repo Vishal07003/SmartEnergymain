@@ -11,6 +11,10 @@ from drf_spectacular.views import (
 )
 
 from apps.accounts.views import (
+    RegisterView,
+    VerifyEmailView,
+    ForgotPasswordView,
+    ResetPasswordConfirmView,
     CustomTokenObtainPairView,
     LogoutView,
     CurrentUserProfileView,
@@ -20,6 +24,10 @@ from apps.accounts.views import (
 # API v1 URL patterns
 api_v1_patterns = [
     # Auth endpoints
+    path('auth/register/', RegisterView.as_view(), name='auth_register'),
+    path('auth/verify-email/', VerifyEmailView.as_view(), name='auth_verify_email'),
+    path('auth/forgot-password/', ForgotPasswordView.as_view(), name='auth_forgot_password'),
+    path('auth/reset-password/', ResetPasswordConfirmView.as_view(), name='auth_reset_password'),
     path('auth/login/', CustomTokenObtainPairView.as_view(), name='auth_login'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
