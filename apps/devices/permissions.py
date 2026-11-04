@@ -2,40 +2,22 @@ from rest_framework import permissions
 
 class IsAdminOrReadOnlyStaffDevice(permissions.BasePermission):
     """
-    Staff can view devices, status, channels, and history (GET, HEAD, OPTIONS).
-    Only Admins can register devices, edit configuration, delete, or reassign rooms.
+    Unified access: All authenticated users can view, register, edit, and assign devices.
     """
-    message = 'Administrative credentials are required to modify device hardware configurations.'
+    message = 'Authentication required to manage campus devices.'
 
     def has_permission(self, request, view):
         user = request.user
-        if not user or not user.is_authenticated:
-            return False
-
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        if user.is_staff or user.is_superuser:
-            return True
-
-        profile = getattr(user, 'staff_profile', None)
-        return bool(profile and profile.role == 'ADMIN')
+        return bool(user and user.is_authenticated and user.is_active)
 
 
 class CanDispatchDeviceCommand(permissions.BasePermission):
     """
-    Both Admin and authorized Staff can queue/issue device commands (e.g., relay toggle request),
-    subject to channel safety lock validation.
+    All authenticated users can queue/issue device commands (e.g., relay toggle request),
+    strictly subject to channel safety lock validation and device online status.
     """
-    message = 'Authorized institutional credentials required to issue device control commands.'
+    message = 'Authentication required to issue device control commands.'
 
     def has_permission(self, request, view):
         user = request.user
-        if not user or not user.is_authenticated:
-            return False
-
-        if user.is_staff or user.is_superuser:
-            return True
-
-        profile = getattr(user, 'staff_profile', None)
-        return bool(profile and profile.role in ['ADMIN', 'STAFF'])
+        return bool(user and user.is_authenticated and user.is_active)
