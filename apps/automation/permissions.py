@@ -2,32 +2,22 @@ from rest_framework import permissions
 
 class IsAdminOrStaffAutomationAccess(permissions.BasePermission):
     """
-    Staff can view rules, command logs, and execute permitted manual controls.
-    Only Admins can create, edit, or delete automation rules.
+    Unified access: All authenticated users can view, create, edit, and evaluate automation rules.
     """
-    message = 'Administrative credentials are required to modify automation rules.'
+    message = 'Authentication required to access or manage automation rules.'
 
     def has_permission(self, request, view):
         user = request.user
-        if not user or not user.is_authenticated:
-            return False
-
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        if user.is_staff or user.is_superuser:
-            return True
-
-        profile = getattr(user, 'staff_profile', None)
-        return bool(profile and profile.role == 'ADMIN')
+        return bool(user and user.is_authenticated and user.is_active)
 
 
 class CanDispatchManualControl(permissions.BasePermission):
     """
-    Authenticated staff and administrators can dispatch manual controls subject to safety lock validation.
+    Unified access: All authenticated users can dispatch manual controls,
+    strictly subject to channel safety-locks and real device online status.
     """
-    message = 'Institutional staff or administrative credentials required for manual device control.'
+    message = 'Authentication required for manual device control.'
 
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated)
+        return bool(user and user.is_authenticated and user.is_active)
