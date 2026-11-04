@@ -1,6 +1,6 @@
 """
 WebSocket Consumers for real-time telemetry, device updates, energy readings, and alerts.
-Enforces authentication and staff/admin boundaries.
+Unified registered user model: any authenticated, active user can subscribe to campus data streams.
 Never broadcasts credentials or sensitive tokens.
 """
 import json
@@ -19,8 +19,8 @@ class BaseAuthenticatedConsumer(AsyncWebsocketConsumer):
             await self.close(code=4001)
             return
 
-        # Restrict real-time campus data to active staff/admin
-        if not (user.is_staff or getattr(user, 'role', '') in ['ADMIN', 'STAFF']):
+        # Inactive or non-existent user accounts rejected
+        if not getattr(user, 'is_active', True):
             await self.close(code=4003)
             return
 
@@ -51,7 +51,7 @@ class RoomConsumer(BaseAuthenticatedConsumer):
             await self.close(code=4001)
             return
 
-        if not (user.is_staff or getattr(user, 'role', '') in ['ADMIN', 'STAFF']):
+        if not getattr(user, 'is_active', True):
             await self.close(code=4003)
             return
 
@@ -72,4 +72,3 @@ class EnergyConsumer(BaseAuthenticatedConsumer):
 
 class AlertConsumer(BaseAuthenticatedConsumer):
     group_name = "alerts"
-
