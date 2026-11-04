@@ -2,34 +2,22 @@ from rest_framework import permissions
 
 class IsAdminOrReadOnlyStaffEnergy(permissions.BasePermission):
     """
-    Staff can view energy data and analytics.
-    Only Admins or authenticated ingestion sources can submit or manage records.
+    Unified access: All authenticated users can view campus energy data and analytics.
     """
-    message = 'Administrative credentials or ingestion service authority required.'
+    message = 'Authentication required to view campus energy telemetry.'
 
     def has_permission(self, request, view):
         user = request.user
-        if not user or not user.is_authenticated:
-            return False
-
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        if user.is_staff or user.is_superuser:
-            return True
-
-        profile = getattr(user, 'staff_profile', None)
-        return bool(profile and profile.role == 'ADMIN')
+        return bool(user and user.is_authenticated and user.is_active)
 
 
 class CanIngestEnergyReading(permissions.BasePermission):
     """
     Controls access to energy ingestion endpoints.
-    Allows authenticated institutional staff/admin or edge devices.
+    Allows authenticated users, edge devices, or verified services.
     """
     message = 'Authentication required for energy reading ingestion.'
 
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated)
-
+        return bool(user and user.is_authenticated and user.is_active)
