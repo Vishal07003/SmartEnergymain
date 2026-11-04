@@ -2,22 +2,10 @@ from rest_framework import permissions
 
 class IsAdminOrReadOnlyStaff(permissions.BasePermission):
     """
-    Staff can view (safe methods: GET, HEAD, OPTIONS).
-    Only Admins can perform create, update, delete (POST, PUT, PATCH, DELETE).
+    Unified access: All authenticated users can view, create, update, and manage rooms and buildings.
     """
-    message = 'Administrative credentials are required to modify institutional room/building structures.'
+    message = 'Authentication required to access or modify room/building facilities.'
 
     def has_permission(self, request, view):
         user = request.user
-        if not user or not user.is_authenticated:
-            return False
-
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        if user.is_staff or user.is_superuser:
-            return True
-
-        profile = getattr(user, 'staff_profile', None)
-        return bool(profile and profile.role == 'ADMIN')
-
+        return bool(user and user.is_authenticated and user.is_active)
